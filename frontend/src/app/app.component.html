@@ -1,0 +1,181 @@
+@if (connecting) {
+  <main class="loading-screen">
+    <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+    <p>Connecting to your Morse workspace…</p>
+  </main>
+} @else if (!user) {
+  <main class="auth-shell">
+    <section class="auth-story">
+      <a class="brand" href="#" aria-label="Morse home">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+        <span>morse<span class="brand-period">.</span></span>
+      </a>
+      <div class="auth-story-copy">
+        <p class="eyebrow"><span class="eyebrow-line"></span> A little language of dots &amp; dashes</p>
+        <h1>Your words<br>have a <em>signal.</em></h1>
+        <p>Translate a message, decode a signal, and keep your own history as you learn.</p>
+        <div class="auth-signal" aria-hidden="true"><span></span><i></i><span></span><b></b><span></span><i></i><span></span></div>
+        <p class="auth-caption">DIT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; DAH&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; DIT</p>
+      </div>
+      <p class="auth-footnote">A quiet space for curious signals.</p>
+    </section>
+
+    <section class="auth-form-side">
+      <div class="auth-card">
+        <p class="eyebrow">YOUR PERSONAL MORSE DESK</p>
+        <h2>{{ authMode === 'login' ? 'Welcome back.' : 'Make it yours.' }}</h2>
+        <p class="auth-subtitle">{{ authMode === 'login' ? 'Sign in to pick up where you left off.' : 'Create an account to keep your translations together.' }}</p>
+
+        <div class="auth-switch" role="tablist" aria-label="Account action">
+          <button type="button" role="tab" [attr.aria-selected]="authMode === 'login'" [class.active]="authMode === 'login'" (click)="setAuthMode('login')">Sign in</button>
+          <button type="button" role="tab" [attr.aria-selected]="authMode === 'register'" [class.active]="authMode === 'register'" (click)="setAuthMode('register')">Create account</button>
+        </div>
+
+        <form (ngSubmit)="submitAuth()">
+          <label for="username">Username</label>
+          <input id="username" name="username" [(ngModel)]="username" required minlength="3" maxlength="32" autocomplete="username" placeholder="e.g. signal-seeker">
+          <label for="password">Password</label>
+          <input id="password" name="password" [(ngModel)]="password" required [minlength]="authMode === 'register' ? 10 : 1" maxlength="72" [attr.autocomplete]="authMode === 'login' ? 'current-password' : 'new-password'" placeholder="{{ authMode === 'register' ? 'At least 10 characters' : 'Your password' }}" type="password">
+          @if (authMode === 'register') {
+            <p class="field-note">Use at least 10 characters. Usernames are 3–32 letters, numbers, _ or -.</p>
+          }
+          <button class="button button-primary auth-submit" type="submit" [disabled]="authBusy || !username || !password">
+            {{ authBusy ? 'One moment…' : authMode === 'login' ? 'Sign in' : 'Create account' }}
+            <span aria-hidden="true">↗</span>
+          </button>
+        </form>
+        @if (authMessage) {
+          <p class="notice" [class.error]="authError" role="status">{{ authMessage }}</p>
+        }
+        <p class="privacy-note"><span aria-hidden="true">⌁</span> Your history belongs to your account and stays on this server.</p>
+      </div>
+    </section>
+  </main>
+} @else {
+  <div class="app-shell">
+    <header class="site-header">
+      <a class="brand" href="#top" aria-label="Morse home">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+        <span>morse<span class="brand-period">.</span></span>
+      </a>
+      <div class="header-tools">
+        <span class="local-pill"><span class="pulse"></span> Personal workspace</span>
+        <button class="header-button history-toggle" type="button" (click)="showHistoryOnMobile = !showHistoryOnMobile" [attr.aria-expanded]="showHistoryOnMobile">
+          History <span class="count-badge">{{ history.length }}</span>
+        </button>
+        <span class="user-chip"><span class="user-avatar">{{ user.username.slice(0, 1).toUpperCase() }}</span>{{ user.username }}</span>
+        <button class="header-button signout-button" type="button" (click)="signOut()">Sign out <span aria-hidden="true">↗</span></button>
+      </div>
+    </header>
+
+    <main id="top" class="page-wrap">
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow"><span class="eyebrow-line"></span> A little language of dots &amp; dashes</p>
+          <h1>Turn words<br>into <em>signals.</em></h1>
+          <p class="hero-description">Translate a message, decode a signal, or practice a little Morse. Your translations are kept in your private history.</p>
+          <button class="guide-link" type="button" (click)="toggleGuide()" [attr.aria-expanded]="showLearning">Open the learning guide <span aria-hidden="true">↗</span></button>
+        </div>
+        <div class="signal-card" aria-hidden="true">
+          <div class="signal-label">SIGNAL NO. 01</div>
+          <div class="signal-wave"><span></span><i></i><span></span><b></b><span></span><i></i><span></span></div>
+          <div class="signal-caption"><span>DIT</span><span>DAH</span><span>DIT</span></div>
+          <div class="signal-stamp">73<small>BEST<br>WISHES</small></div>
+        </div>
+      </section>
+
+      <div class="content-grid">
+        <div class="main-column">
+          <section class="translator card" aria-labelledby="translator-title">
+            <div class="section-heading">
+              <div><p class="eyebrow">THE TRANSLATOR</p><h2 id="translator-title">Your message, either way.</h2></div>
+              <span class="private-note"><span aria-hidden="true">⌁</span> Saved to your history</span>
+            </div>
+
+            <div class="direction-switch" role="group" aria-label="Translation direction">
+              <button type="button" [class.active]="direction === 'TEXT_TO_MORSE'" [attr.aria-pressed]="direction === 'TEXT_TO_MORSE'" (click)="setDirection('TEXT_TO_MORSE')">Text <span>→</span> Morse</button>
+              <button type="button" [class.active]="direction === 'MORSE_TO_TEXT'" [attr.aria-pressed]="direction === 'MORSE_TO_TEXT'" (click)="setDirection('MORSE_TO_TEXT')">Morse <span>→</span> Text</button>
+            </div>
+
+            <div class="translation-grid">
+              <label class="text-panel" for="source-text">
+                <span class="panel-label"><span>{{ direction === 'TEXT_TO_MORSE' ? 'YOUR TEXT' : 'MORSE CODE' }}</span><span>{{ inputText.length }} characters</span></span>
+                <textarea id="source-text" name="sourceText" [(ngModel)]="inputText" spellcheck="false" [placeholder]="direction === 'TEXT_TO_MORSE' ? 'Type a message here…' : 'Paste Morse code here…'" maxlength="50000"></textarea>
+                <span class="panel-hint">{{ direction === 'TEXT_TO_MORSE' ? 'Letters, numbers, spaces & common punctuation' : 'Separate letters with spaces · words with /' }}</span>
+              </label>
+              <span class="flow-arrow" aria-hidden="true">→</span>
+              <label class="text-panel result-panel" for="result-text">
+                <span class="panel-label"><span>{{ direction === 'TEXT_TO_MORSE' ? 'MORSE CODE' : 'DECODED TEXT' }}</span><button class="copy-button" type="button" [disabled]="!outputText" (click)="copyOutput()">{{ copyLabel }} <span aria-hidden="true">↗</span></button></span>
+                <textarea id="result-text" name="resultText" [value]="outputText" spellcheck="false" placeholder="Your translation will appear here…" readonly></textarea>
+                <span class="panel-hint">{{ direction === 'TEXT_TO_MORSE' ? 'Letters separated by spaces · words by /' : 'Your decoded message' }}</span>
+              </label>
+            </div>
+
+            <div class="translator-actions">
+              <button class="button button-primary" type="button" (click)="translateMessage()" [disabled]="translating">{{ translating ? 'Working…' : direction === 'TEXT_TO_MORSE' ? 'Translate message' : 'Decode message' }} <span aria-hidden="true">↗</span></button>
+              <button class="text-button" type="button" (click)="loadSample()">Try a sample <span aria-hidden="true">↗</span></button>
+              <button class="text-button clear-button" type="button" (click)="clearMessage()">Clear</button>
+              @if (translationMessage) { <span class="status-message" [class.error]="translationError" role="status">{{ translationMessage }}</span> }
+            </div>
+          </section>
+
+          <section class="file-card card" aria-labelledby="file-title">
+            <div class="file-intro">
+              <span class="file-icon" aria-hidden="true"><svg viewBox="0 0 36 36" fill="none"><path d="M9 4.75h11l7 7v19.5H9V4.75Z"/><path d="M20 5v7h7M13 19h10M13 24h10"/></svg></span>
+              <div><p class="eyebrow">BRING A FILE ALONG</p><h2 id="file-title">Translate a text file.</h2><p>Choose a .txt file, convert it with the direction above, and save your result.</p></div>
+            </div>
+            <div class="file-controls">
+              <label class="upload-zone" for="file-input">
+                <input id="file-input" type="file" accept=".txt,.text,text/plain" (change)="selectFile($event)">
+                <span class="upload-arrow" aria-hidden="true">↑</span><span class="file-name">{{ selectedFile?.name || 'Choose a .txt file' }}<small>{{ selectedFile ? (selectedFile.size / 1024 | number:'1.0-1') + ' KB' : 'Browse from your device' }}</small></span><span class="browse-label">Browse</span>
+              </label>
+              <button class="button button-outline" type="button" (click)="translateFile()" [disabled]="!selectedFile || fileTranslating">{{ fileTranslating ? 'Translating…' : 'Translate file' }} <span aria-hidden="true">↗</span></button>
+              <button class="button button-download" type="button" (click)="downloadFile()" [disabled]="!fileResult">Download <span aria-hidden="true">↓</span></button>
+            </div>
+            <p class="file-status" [class.error]="fileError" role="status">{{ fileMessage }}</p>
+          </section>
+
+          @if (showLearning) {
+            <section class="learning card" aria-labelledby="learning-title">
+              <div class="learning-top"><div><p class="eyebrow">A FIELD GUIDE</p><h2 id="learning-title">Learn the rhythm.</h2><p class="learning-lede">Morse code turns letters and numbers into short signals (dots) and long signals (dashes). It can travel as sound, light, or radio.</p></div><button class="close-guide" type="button" aria-label="Close learning guide" (click)="showLearning = false">×</button></div>
+              <div class="learning-columns">
+                <article class="learning-step"><span class="step-number">01</span><h3>Hear the shape</h3><p>A dot is one beat. A dash lasts three beats. Leave a short pause between letters and a longer one between words.</p></article>
+                <article class="learning-step"><span class="step-number">02</span><h3>Learn by sound</h3><p>Practice letters as rhythms instead of counting dots. Start with E (dit), T (dah), and SOS (dit dit dit · dah dah dah · dit dit dit).</p></article>
+                <article class="learning-step"><span class="step-number">03</span><h3>Build a habit</h3><p>Practice a few minutes each day: listen, copy a short phrase, then decode it. Add letters gradually and keep the pace relaxed.</p></article>
+              </div>
+              <div class="reference-heading"><h3>A–Z at a glance</h3><span>International Morse</span></div>
+              <div class="reference-grid">@for (item of alphabet; track item[0]) { <div class="reference-item"><strong>{{ item[0] }}</strong><span>{{ item[1] }}</span></div> }</div>
+              <p class="learning-footer"><span aria-hidden="true">✳</span> Morse remains useful in amateur radio, accessibility tools, and emergency signaling.</p>
+            </section>
+          }
+        </div>
+
+        <aside class="history-card card" [class.mobile-open]="showHistoryOnMobile" aria-labelledby="history-title">
+          <div class="history-heading"><div><p class="eyebrow">YOUR LIBRARY</p><h2 id="history-title">Recent signals</h2></div><button class="history-close" type="button" aria-label="Close history" (click)="showHistoryOnMobile = false">×</button></div>
+          <div class="history-meta"><span>{{ history.length }} saved {{ history.length === 1 ? 'translation' : 'translations' }}</span><button type="button" (click)="clearHistory()" [disabled]="!history.length">Clear all</button></div>
+          @if (historyError) { <p class="history-error" role="status">{{ historyError }}</p> }
+          @if (historyLoading) {
+            <div class="history-empty"><span class="loading-dot"></span><p>Loading your history…</p></div>
+          } @else if (!history.length) {
+            <div class="history-empty"><span class="empty-glyph" aria-hidden="true">··· — ···</span><p>Your translations will appear here.</p><small>Each one is kept with your account.</small></div>
+          } @else {
+            <div class="history-list">
+              @for (entry of history; track entry.id) {
+                <article class="history-entry">
+                  <button class="history-item" type="button" (click)="restoreEntry(entry)" [attr.aria-label]="'Load ' + directionLabel(entry.direction) + ' translation from ' + (entry.createdAt | date:'short')">
+                    <span class="history-item-top"><span>{{ directionLabel(entry.direction) }}</span><span class="source-tag">{{ entry.source === 'FILE' ? 'FILE' : 'TEXT' }}</span></span>
+                    <span class="history-preview">{{ entry.inputText }}</span>
+                    <span class="history-item-bottom"><time>{{ entry.createdAt | date:'MMM d · h:mm a' }}</time><span class="history-item-actions">Open ↗</span></span>
+                  </button>
+                  <button class="delete-entry" type="button" aria-label="Delete translation" (click)="removeEntry(entry, $event)">×</button>
+                </article>
+              }
+            </div>
+          }
+          <div class="history-footnote"><span aria-hidden="true">⌁</span> Only you can see this history.</div>
+        </aside>
+      </div>
+      <footer class="site-footer"><button type="button" (click)="toggleGuide()">{{ showLearning ? 'Close learning guide' : 'Learn Morse' }} <span aria-hidden="true">↗</span></button><span>·</span><span>dit&nbsp; dit&nbsp; dit&nbsp; dah&nbsp; dah&nbsp; dah&nbsp; dit&nbsp; dit&nbsp; dit</span></footer>
+    </main>
+  </div>
+}
