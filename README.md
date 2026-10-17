@@ -1,4 +1,6 @@
 # Morse Translator
+## Live demo
+[Open the Morse Code Translator](https://morse-code-translator-v2.vercel.app/)
 
 A full-stack Morse code translator built with Angular 20 and Spring Boot 4. It supports accounts, per-user translation history, text and `.txt` file translation, and a Morse learning guide.
 
