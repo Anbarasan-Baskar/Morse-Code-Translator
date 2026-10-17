@@ -6,6 +6,4 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     hibernate:
       ddl-auto: update
-    properties:
-      hibernate:
-        default_schema: app
+    
